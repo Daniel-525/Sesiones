@@ -20,6 +20,7 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //Obtengo el objeto de la sesión
         LoginService auth = new LoginServiceSessionImplement();
         Optional<String> usernameOptional = auth.getUsername(req);
 

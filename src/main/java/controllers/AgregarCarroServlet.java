@@ -23,7 +23,7 @@ public class AgregarCarroServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Long id = Long.parseLong(req.getParameter("id"));
         ProductoService service = new ProductoServiceImplement();
-        Optional<Producto> producto = service.porId(id);
+        Optional<Producto> producto= service.porId(id);
         if (producto.isPresent()) {
             ItemCarro item = new ItemCarro(1, producto.get());
             HttpSession session = req.getSession();
@@ -32,10 +32,10 @@ public class AgregarCarroServlet extends HttpServlet {
                 detalleCarro = new DetalleCarro();
                 session.setAttribute("carro", detalleCarro);
             }else{
-                detalleCarro = (DetalleCarro) session.getAttribute("carro");
+                detalleCarro=(DetalleCarro) session.getAttribute("carro");
             }
             detalleCarro.addItemCarro(item);
         }
-        resp.sendRedirect(req.getContextPath() + "/ver-carro");
+        resp.sendRedirect(req.getContextPath()+"/ver-carro");
     }
 }

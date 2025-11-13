@@ -8,6 +8,7 @@ import java.util.Optional;
 public class LoginServiceSessionImplement implements LoginService {
     @Override
     public Optional<String> getUsername(HttpServletRequest request) {
+        //Obtengo la sesión
         HttpSession session = request.getSession();
         String username = (String) session.getAttribute("username");
         if (username != null) {

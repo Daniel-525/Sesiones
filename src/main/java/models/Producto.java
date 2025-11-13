@@ -4,12 +4,12 @@ public class Producto {
     private Long id;
     private String nombre;
     private String tipo;
-    private int precio;
+    private double precio;
 
     public Producto() {
     }
 
-    public Producto(Long id, String nombre, String tipo, int precio) {
+    public Producto(Long id, String nombre, String tipo, double precio) {
         this.id = id;
         this.nombre = nombre;
         this.tipo = tipo;
@@ -40,7 +40,7 @@ public class Producto {
         this.tipo = tipo;
     }
 
-    public int getPrecio() {
+    public double getPrecio() {
         return precio;
     }
 

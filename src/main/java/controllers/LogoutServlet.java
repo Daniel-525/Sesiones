@@ -12,6 +12,7 @@ import services.LoginServiceSessionImplement;
 
 import java.io.IOException;
 import java.util.Optional;
+
 @WebServlet("/logout")
 public class LogoutServlet extends HttpServlet {
     @Override

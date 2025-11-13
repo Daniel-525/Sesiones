@@ -30,7 +30,11 @@ public class DetalleCarro {
         return items;
     }
 
-    public double getTotal(){
-        return  items.stream().mapToDouble(ItemCarro::getSubtotal).sum();
+
+    public double getTotal() {
+        double iva = 0.16;
+        double subtotal = items.stream().mapToDouble(ItemCarro::getSubtotal).sum();
+        return subtotal + (subtotal * iva);
     }
+
 }
