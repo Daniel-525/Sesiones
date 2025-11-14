@@ -1,37 +1,38 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>🔑 Formulario de Login</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h2>Iniciar sesión</h2>
-        <span class="badge">Acceso</span>
+<div class="contenedor">
+    <div class="encabezado">
+        <h1 class="titulo">Iniciar sesión</h1>
+        <span class="etiqueta">Acceso al sistema</span>
     </div>
-    <form method="post" action="login">
-        <label>Usuario
-            <input type="text" name="username" required autocomplete="username">
-        </label>
-        <label>Contraseña
-            <input type="password" name="password" required autocomplete="current-password">
-        </label>
-        <div class="actions">
-            <button type="submit">Entrar</button>
-            <a class="button secondary" href="index.html">Volver</a>
+
+    <form action="/manejoDeSesiones/login" method="post">
+        <div class="campo">
+            <label for="username">Username</label>
+            <div>
+                <input type="text" name="username" id="username" placeholder="Ingrese su usuario" required>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label for="password">Password</label>
+            <div>
+                <input type="password" name="password" id="password" placeholder="********" required>
+            </div>
+        </div>
+
+        <div class="acciones" style="justify-content: flex-end;">
+            <input type="submit" value="Login" class="boton">
         </div>
     </form>
-    <%
-        String error = (String) request.getAttribute("error");
-        if (error != null) {
-    %>
-    <p class="alert"><%= error %></p>
-    <%
-        }
-    %>
+
 </div>
 </body>
 </html>

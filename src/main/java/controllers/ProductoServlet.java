@@ -1,111 +1,144 @@
-package controllers;
 /*
  * Autor: Cristian Arias
- * Fecha y version: 10/11/2025 | Version: 1.0
- * Descripcion: Servlet que muestra una pagina HTML con el listado de productos.
- * Si el usuario ha iniciado sesion, se muestran los precios y el numero de veces que ha ingresado.
+ * Fecha y version: 13/11/2025  |  Version: 1.0
+ * Descripcion: Servlet que muestra el listado de productos disponibles.
+ * Verifica si hay sesión activa y muestra precios y acciones de compra
+ * solo para usuarios logueados.
  */
 
-// Importa las clases necesarias de Jakarta para manejar peticiones HTTP y servlets.
+package controllers;
+// Define el paquete donde se encuentra este servlet
+
+// Importa clases de Jakarta Servlet para manejar solicitudes HTTP
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-// Importa las clases del modelo y los servicios utilizados.
+// Importa clases del modelo y servicios
 import models.Producto;
-import services.LoginServiceSessionImpl;
+import services.LoginService;
+import services.LoginServiceSessionImplement;
 import services.ProductoService;
-import services.ProductoServiceImpl;
+import services.ProductoServiceImplement;
 
+// Importa utilidades de Java
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-// Define las rutas URL que este servlet atendera.
+// Define las URLs a las que responderá este servlet
 @WebServlet({"/productos.html", "/productos"})
 public class ProductoServlet extends HttpServlet {
 
-    // Crea una instancia del servicio de autenticacion de usuario.
-    private final services.LoginService auth = new LoginServiceSessionImpl();
-
-    // Crea una instancia del servicio de productos.
-    private final ProductoService service = new ProductoServiceImpl();
-
-    // Metodo doGet: se ejecuta cuando el navegador realiza una peticion HTTP GET.
+    // Método que maneja solicitudes GET
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        // Evita el almacenamiento en cache del contenido en el navegador.
-        resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        resp.setHeader("Pragma", "no-cache");
-        resp.setDateHeader("Expires", 0);
+        // Crea instancia del servicio de productos para obtener la lista
+        ProductoService service = new ProductoServiceImplement();
 
-        // Obtiene el nombre de usuario de la sesion actual, si existe.
-        Optional<String> userOpt = auth.getUsername(req);
-
-        // Obtiene la lista de productos desde el servicio.
+        // Obtiene todos los productos mediante el método listar()
         List<Producto> productos = service.listar();
 
-        // Establece el tipo de contenido de la respuesta como HTML con codificacion UTF-8.
+        // Crea instancia del servicio de login para verificar sesión
+        LoginService auth = new LoginServiceSessionImplement();
+
+        // Obtiene el username de la sesión actual, si existe
+        Optional<String> usernameOptional = auth.getUsername(req);
+
+        // Configura el tipo de contenido de la respuesta como HTML UTF-8
         resp.setContentType("text/html;charset=UTF-8");
 
-        // Escribe la respuesta HTML que se enviara al navegador.
+        // Crea un PrintWriter para escribir la respuesta HTML
         try (PrintWriter out = resp.getWriter()) {
 
-            // Estructura inicial del documento HTML.
-            out.println("<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Productos</title>");
-            out.println("<link rel='stylesheet' href='styles.css'>");
-            out.println("</head><body><div class='container'>");
+            // Inicia la estructura básica del HTML
+            out.println("<!DOCTYPE html>");
+            out.println("<html lang='es'>");
 
-            // Seccion de cabecera con el titulo y la informacion de sesion.
-            out.println("<div class='header'>");
-            out.println("<h2>Listado de Productos</h2>");
+            // Sección <head> con metadatos y estilos
+            out.println("<head>");
+            out.println("<meta charset='UTF-8'>"); // Codificación de caracteres
+            out.println("<title>📦 Listado de Productos</title>"); // Título de la página
+            out.println("<link rel='stylesheet' href='" + req.getContextPath() + "/css/styles.css'>");
+            // Vincula hoja de estilos CSS
+            out.println("</head>");
 
-            // Si el usuario ha iniciado sesion, se muestra su nombre y numero de ingresos.
-            if (userOpt.isPresent()) {
-                String user = userOpt.get();
+            // Sección <body> del HTML
+            out.println("<body>");
+            out.println("<div class='contenedor'>"); // Contenedor principal
 
-                // Recupera el mapa global que contiene los conteos de inicio de sesion.
-                Map<String, Integer> counts = (Map<String, Integer>) getServletContext().getAttribute("loginCounts");
-
-                // Obtiene el numero de veces que el usuario ha iniciado sesion.
-                int veces = counts != null ? counts.getOrDefault(user, 0) : 0;
-
-                // Muestra el nombre del usuario, cantidad de ingresos y enlace para cerrar sesion.
-                out.println("<div><span class='badge'>" + user + "</span> &nbsp;|&nbsp; Inicios: <b>" + veces + "</b> &nbsp;|&nbsp; <a class='button secondary' href='" + req.getContextPath() + "/logout'>Cerrar sesion</a></div>");
-            } else {
-                // Si no hay sesion activa, muestra enlace para ir al login.
-                out.println("<div>No autenticado · <a class='button secondary' href='" + req.getContextPath() + "/login.html'>Login</a></div>");
-            }
+            // Encabezado de la página con título y etiqueta
+            out.println("<div class='encabezado'>");
+            out.println("<h1>Listado de Productos</h1>");
+            out.println("<span class='etiqueta'>Inventario Disponible</span>");
             out.println("</div>");
 
-            // Construye la tabla HTML con los datos de los productos.
-            out.println("<table><thead><tr><th>Id</th><th>Nombre</th><th>Tipo</th>");
-            if (userOpt.isPresent()) out.println("<th>Precio</th>");
-            out.println("</tr></thead><tbody>");
-
-            // Recorre la lista de productos y genera una fila por cada uno.
-            for (Producto p : productos) {
-                out.println("<tr>");
-                out.println("<td>" + p.getId() + "</td>");
-                out.println("<td>" + p.getNombre() + "</td>");
-                out.println("<td>" + p.getTipo() + "</td>");
-                if (userOpt.isPresent()) out.println("<td>$" + p.getPrecio() + ".00</td>");
-                out.println("</tr>");
+            // Mensaje de bienvenida según si hay usuario logueado
+            if (usernameOptional.isPresent()) {
+                out.println("<p class='mensaje'>Hola <strong>"
+                        + usernameOptional.get()
+                        + "</strong>, ¡listo para comprar! 🛒</p>");
+            } else {
+                out.println("<p class='mensaje'>⚠️ Debes iniciar sesión para ver precios y comprar.</p>");
             }
 
-            // Cierra la tabla.
-            out.println("</tbody></table>");
+            // ======= TABLA DE PRODUCTOS =======
+            out.println("<table class='tabla-carro'>"); // Clase CSS para estilo uniforme
+            out.println("<thead>");
+            out.println("<tr>");
+            out.println("<th>ID</th>"); // Columna ID
+            out.println("<th>Nombre</th>"); // Columna Nombre
+            out.println("<th>Tipo</th>"); // Columna Tipo
 
-            // Agrega un enlace para regresar a la pagina de inicio.
-            out.println("<div class='actions'><a class='button secondary' href='" + req.getContextPath() + "/index.html'>Inicio</a></div>");
+            // Si hay usuario logueado, agrega columnas de Precio y Acciones
+            if (usernameOptional.isPresent()) {
+                out.println("<th>Precio</th>"); // Columna Precio
+                out.println("<th>Acciones</th>"); // Columna Acciones
+            }
+            out.println("</tr>");
+            out.println("</thead>");
+            out.println("<tbody>");
 
-            // Cierra las etiquetas del documento HTML.
-            out.println("</div></body></html>");
+            // Recorre todos los productos y genera filas dinámicamente
+            productos.forEach(p -> {
+                out.println("<tr>");
+                out.println("<td>" + p.getId() + "</td>"); // Muestra ID del producto
+                out.println("<td>" + p.getNombre() + "</td>"); // Muestra nombre
+                out.println("<td>" + p.getTipo() + "</td>"); // Muestra tipo
+
+                // Si hay usuario logueado, muestra precio y botón de agregar
+                if (usernameOptional.isPresent()) {
+                    out.println("<td>$<strong>" + p.getPrecio() + "</strong></td>"); // Precio
+                    out.println("<td><a class='boton secundario' href='"
+                            + req.getContextPath()
+                            + "/agregar-carro?id=" + p.getId()
+                            + "'>➕ Agregar</a></td>"); // Botón de agregar al carrito
+                }
+
+                out.println("</tr>"); // Cierra fila
+            });
+
+            out.println("</tbody>");
+            out.println("</table>"); // Cierra tabla
+
+            // ====== BOTONES DE NAVEGACIÓN ======
+            out.println("<div class='acciones' style='justify-content: space-between;'>");
+            // Botón para volver al inicio
+            out.println("<a href='" + req.getContextPath() + "/index.html' class='boton'>Volver al Inicio</a>");
+
+            // Botón para ver carrito solo si hay sesión activa
+            if (usernameOptional.isPresent()) {
+                out.println("<a href='" + req.getContextPath() + "/carro' class='boton'>Ver Carro 🛒</a>");
+            }
+            out.println("</div>"); // Cierra div acciones
+
+            out.println("</div>"); // Cierra contenedor principal
+            out.println("</body>"); // Cierra body
+            out.println("</html>"); // Cierra html
         }
     }
 }

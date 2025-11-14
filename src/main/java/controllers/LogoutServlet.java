@@ -1,12 +1,14 @@
-package controllers;
 /*
  * Autor: Cristian Arias
- * Fecha y version: 10/11/2025 | Version: 1.0
- * Descripcion: Servlet encargado de cerrar la sesion del usuario autenticado.
- * Invalida la sesion actual y redirige al formulario de inicio de sesion.
+ * Fecha y version: 13/11/2025  |  Version: 1.0
+ * Descripcion: Servlet que gestiona el cierre de sesión del usuario.
+ * Si existe una sesión activa, la invalida y redirige al usuario
+ * a la página de login.
  */
 
-// Importa las clases necesarias para el manejo de servlets, sesiones y respuestas HTTP.
+package controllers;
+
+// Importa clases de Jakarta Servlet para manejar solicitudes HTTP
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,39 +16,37 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-// Importa el servicio que gestiona la autenticacion de usuarios.
+// Importa servicios de login para validar la sesión
 import services.LoginService;
-import services.LoginServiceSessionImpl;
+import services.LoginServiceSessionImplement;
 
+// Importa utilidades de Java
 import java.io.IOException;
 import java.util.Optional;
 
-// Define la ruta URL donde este servlet respondera.
+// Define la URL a la que responderá este servlet
 @WebServlet("/logout")
 public class LogoutServlet extends HttpServlet {
 
-    // Crea una instancia del servicio de autenticacion.
-    // Se utiliza para verificar si hay un usuario autenticado antes de cerrar la sesion.
-    private final LoginService auth = new LoginServiceSessionImpl();
-
-    // Metodo doGet: se ejecuta cuando el navegador realiza una peticion HTTP GET.
-    // Su funcion principal es cerrar la sesion activa del usuario.
+    // Método que maneja solicitudes GET para cerrar sesión
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        // Obtiene el nombre del usuario autenticado, si existe, usando el servicio de sesion.
-        Optional<String> userOpt = auth.getUsername(req);
+        // Crea una instancia del servicio de login
+        LoginService auth = new LoginServiceSessionImplement();
 
-        // Si existe un usuario autenticado, se procede a cerrar su sesion.
-        if (userOpt.isPresent()) {
-            // Recupera la sesion actual (sin crear una nueva si no existe).
-            HttpSession session = req.getSession(false);
+        // Obtiene el username de la sesión, si existe
+        Optional<String> username = auth.getUsername(req);
 
-            // Si la sesion existe, la invalida, eliminando todos los datos asociados.
-            if (session != null) session.invalidate();
+        // Si hay un usuario logueado
+        if (username.isPresent()) {
+            // Obtiene la sesión del usuario
+            HttpSession session = req.getSession();
+            // Invalida la sesión, eliminando todos sus atributos
+            session.invalidate();
         }
 
-        // Redirige al usuario al formulario de inicio de sesion despues de cerrar la sesion.
+        // Redirige al usuario a la página de login
         resp.sendRedirect(req.getContextPath() + "/login.html");
     }
 }
